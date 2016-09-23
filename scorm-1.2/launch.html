@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title></title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .sco_container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="scoContainer" class="sco_container" data-src="index.html" src="" mozallowfullscreen="true" webkitallowfullscreen="true" allowfullscreen="true" frameborder="0"></iframe>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        (function ($) {
+
+            //#region Find scorm api
+
+            function __findScormAPI__(win, apiName) {
+                var api = null;
+                win = win ? win : window;
+                apiName = apiName ? apiName : "API_1484_11";    //default find scorm1.3 api
+                while (win != null) {
+                    api = win[apiName];
+                    if (api) {
+                        break;
+                    }
+                    win = (win.parent == win) ? win.opener : win.parent;
+                }
+                return api;
+            }
+
+            //#endregion
+
+            function init() {
+                var $title = $("title");
+                var $iframe = $("#scoContainer");
+                var src = $iframe.data("src");
+
+                initSco();
+
+                $iframe.load(onLoaded);
+                $iframe.attr("src", src);
+
+                function onLoaded() {
+                    var iWin = $iframe[0].contentWindow;
+                    var iDoc = iWin.document;
+                    var $iTitle = $("title", iDoc);
+                    $title.text($iTitle.text());
+                }
+
+                function initSco() {
+                    var api = __findScormAPI__(window, "API");
+                    if (!api) {
+                        return;
+                    }
+                    api.LMSInitialize("");
+                    initTerminate(api);
+                }
+
+                function initTerminate(api) {
+                    var exitName = "cmi.core.exit";
+                    var statueName = "cmi.core.lesson_status";
+
+                    var $win = $(window);
+                    $win.on("beforeunload", onUnload);
+                    function onUnload() {
+                        var status = api.LMSGetValue(statueName);
+                        var exitValue = "suspend";
+                        if (status == "passed" || status == "completed") {
+                            exitValue = "logout";
+                        }
+                        api.LMSSetValue(exitName, exitValue);
+                        //api.LMSCommit("");
+                        api.LMSFinish("");
+                    }
+                }
+            }
+
+            $(init);
+
+        })(jQuery);
+    </script>
+</body>
+</html>
