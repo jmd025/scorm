@@ -9,6 +9,7 @@ A batch script to clean scorm meta file,such as imsmanifest.xml/adlcp_v1p3.xsd f
 support scorm1.2 and scorm2004.
 
 usages:
+
 1.put the scorm.meta.cleaner.bat into the scorm course root folder and run it.
 
 2.drag the scorm course folder to the scorm.meta.cleaner.bat file.
